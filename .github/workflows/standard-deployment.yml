@@ -1,0 +1,71 @@
+name: Multi region deployment workflow
+
+on:
+  workflow_call:
+
+jobs:
+  deploy-dev-eu:
+    uses: ./.github/workflows/deploy.yml
+    with:
+      environment: DEV-EU
+
+  deploy-dev-us:
+    uses: ./.github/workflows/deploy.yml
+    with:
+      environment: DEV-US
+
+  deploy-staging-eu:
+    uses: ./.github/workflows/deploy.yml
+    needs: [ deploy-dev-eu, deploy-dev-us ]
+    with:
+      environment: STAGING-EU
+
+  deploy-staging-us:
+    uses: ./.github/workflows/deploy.yml
+    needs: [ deploy-dev-eu, deploy-dev-us ]
+    with:
+      environment: STAGING-US
+
+  deploy-prod-eu:
+    uses: ./.github/workflows/deploy.yml
+    needs: [ deploy-staging-eu, deploy-staging-us ]
+    with:
+      environment: PROD-EU
+
+  test-prod-eu:
+    runs-on: ubuntu-latest
+    needs: deploy-prod-eu
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Run End-to-End Test
+        uses: ./composite-actions/end-to-end-test
+        with:
+          environment: PROD-EU
+
+  bake-in-eu:
+    runs-on: ubuntu-latest
+    needs: deploy-prod-eu
+    environment: PROD-EU
+    steps:
+      - name: Bake in period
+        run: sleep 10
+
+  deploy-prod-us:
+    uses: ./.github/workflows/deploy.yml
+    needs:
+      - bake-in-eu
+      - test-prod-eu
+    with:
+      environment: PROD-US
+
+  test-prod-us:
+    runs-on: ubuntu-latest
+    needs: deploy-prod-us
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Run End-to-End Test
+        uses: ./composite-actions/end-to-end-test
+        with:
+          environment: PROD-US
