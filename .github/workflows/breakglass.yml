@@ -9,7 +9,7 @@ on:
 
 jobs:
   deploy-staging:
-    uses: ./.github/workflows/deploy.yml@main
+    uses: ./.github/workflows/deploy.yml
     with:
       environment: STAGING-${{ github.event.inputs.region }}
 
@@ -25,7 +25,7 @@ jobs:
           environment: STAGING-${{ github.event.inputs.region }}
 
   deploy-prod:
-    uses: ./.github/workflows/deploy.yml@main
+    uses: ./.github/workflows/deploy.yml
     needs:
       - test-staging
     with:
