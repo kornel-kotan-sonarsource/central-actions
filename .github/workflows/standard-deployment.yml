@@ -36,10 +36,8 @@ jobs:
     runs-on: ubuntu-latest
     needs: deploy-prod-eu
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
       - name: Run End-to-End Test
-        uses: ./composite-actions/end-to-end-test
+        uses: kornel-kotan-sonarsource/central-actions/composite-actions/end-to-end-test@main
         with:
           environment: PROD-EU
 
@@ -63,9 +61,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: deploy-prod-us
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
       - name: Run End-to-End Test
-        uses: ./composite-actions/end-to-end-test
+        uses: kornel-kotan-sonarsource/central-actions/composite-actions/end-to-end-test@main
         with:
           environment: PROD-US
