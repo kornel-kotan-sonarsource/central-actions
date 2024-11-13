@@ -1,0 +1,36 @@
+name: Install deployment tools
+description: Install tools required for deployment
+
+runs:
+  using: "composite"
+  steps:
+    - name: Install Poetry
+      run: |
+        pipx install poetry
+      shell: bash
+    - name: Install Python 3.9
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.9'
+        cache: 'poetry'
+      shell: bash
+    - name: Install Sops
+      run: |
+        sudo apt install -y wget
+        wget https://github.com/mozilla/sops/releases/download/v3.9.0/sops_3.9.0_amd64.deb
+        sudo dpkg -i sops_3.9.0_amd64.deb
+      shell: bash
+    - name: Install CDKv2
+      run: |
+        npm install -g aws-cdk@v2
+      shell: bash
+    - name: Print versions
+      run: |
+        echo "NPM: $(npm -v)"
+        echo "Python: $(python3 --version)"
+        echo "Pip: $(pip --version)"
+        echo "Poetry: $(poetry --version)"
+        echo "Node: $(node --version)"
+        echo "CDK: $(cdk --version)"
+        echo "Java: $(java --version)"
+      shell: bash

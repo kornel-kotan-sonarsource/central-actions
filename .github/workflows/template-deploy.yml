@@ -18,8 +18,22 @@ jobs:
     environment: ${{ inputs.github_environment }}
 
     steps:
-      - name: Deploy to ${{ vars.ENV_NAME }}
-        run: echo "Deployment to ${{ vars.ENV_NAME }}"
+      - name: Install deployment tools
+        uses: ./composite-actions/install-deploy-tools
+      - name: Configure AWS IAM OIDC provider role
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-region: ${{ vars.AWS_REGION }}
+          role-to-assume: arn:aws:iam::${{ vars.AWS_ACCOUNT_ID }}:role/${{ vars.CICD_ROLE }}
+          role-session-name: GHA-${{ inputs.github_environment }}
+      - name: AWS Who Am I
+        run: |
+          aws sts get-caller-identity
+          env | egrep -v "SECRET|TOKEN|USER|PASS|TOKEN|JIRA|GITHUB|ADMIN|SESS|KEY|ACCESS|ga"
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
       - name: Get vault secrets
         id: secrets
         uses: SonarSource/vault-action-wrapper@v3
@@ -27,49 +41,10 @@ jobs:
           secrets: |
             development/artifactory/token/{REPO_OWNER_NAME_DASH}-private-reader username | ARTIFACTORY_USERNAME;
             development/artifactory/token/{REPO_OWNER_NAME_DASH}-private-reader access_token | ARTIFACTORY_ACCESS_TOKEN;
-      - name: Checkout repo
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
-      - name: Install Poetry
-        run: |
-          pipx install poetry
-      - name: Install Python 3.9
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.9'
-          cache: 'poetry'
-      - name: Install Sops
-        run: |
-          sudo apt install -y wget
-          wget https://github.com/mozilla/sops/releases/download/v3.9.0/sops_3.9.0_amd64.deb
-          sudo dpkg -i sops_3.9.0_amd64.deb
-      - name: Install CDKv2
-        run: |
-          npm install -g aws-cdk@v2
-      - name: Print versions
-        run: |
-          echo "NPM: $(npm -v)"
-          echo "Python: $(python3 --version)"
-          echo "Pip: $(pip --version)"
-          echo "Poetry: $(poetry --version)"
-          echo "Node: $(node --version)"
-          echo "CDK: $(cdk --version)"
-          echo "Java: $(java --version)"
-      - name: Configure AWS IAM OIDC provider role
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-region: ${{ vars.AWS_REGION }}
-          role-to-assume: arn:aws:iam::${{ vars.AWS_ACCOUNT_ID }}:role/${{ vars.CICD_ROLE }}
-          role-session-name: ga-${{ vars.ENV_NAME }}
-      - name: AWS Who Am I
-        run: |
-          aws sts get-caller-identity
-          env | egrep -v "SECRET|TOKEN|USER|PASS|TOKEN|JIRA|GITHUB|ADMIN|SESS|KEY|ACCESS|ga"
       - name: Execute input cmd
         env:
           POETRY_HTTP_BASIC_REPOX_PASSWORD: ${{ fromJSON(steps.secrets.outputs.vault).ARTIFACTORY_ACCESS_TOKEN }}
           POETRY_HTTP_BASIC_REPOX_USERNAME: ${{ fromJSON(steps.secrets.outputs.vault).ARTIFACTORY_USERNAME }}
         run: |
           echo "Execute cmd ${{ inputs.make_deploy_command }}"
-          ENV_NAME=${{ vars.ENV_NAME }} ENV_TYPE=${{ vars.ENV_TYPE }}" AWS_REGION=${{ vars.AWS_REGION }}" ${{ inputs.make_deploy_command }}
+          ENV_NAME=${{ inputs.github_environment }} ENV_TYPE=${{ vars.ENV_TYPE }}" AWS_REGION=${{ vars.AWS_REGION }}" ${{ inputs.make_deploy_command }}
