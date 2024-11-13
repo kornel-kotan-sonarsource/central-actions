@@ -19,7 +19,7 @@ jobs:
 
     steps:
       - name: Install deployment tools
-        uses: kornel-kotan-sonarsource/central-actions/composite-actions/install-deploy-tools
+        uses: kornel-kotan-sonarsource/central-actions/composite-actions/install-deploy-tools@main
       - name: Configure AWS IAM OIDC provider role
         uses: aws-actions/configure-aws-credentials@v4
         with:
