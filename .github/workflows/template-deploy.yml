@@ -30,10 +30,6 @@ jobs:
         run: |
           aws sts get-caller-identity
           env | egrep -v "SECRET|TOKEN|USER|PASS|TOKEN|JIRA|GITHUB|ADMIN|SESS|KEY|ACCESS|ga"
-      - name: Checkout repo
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
       - name: Get vault secrets
         id: secrets
         uses: SonarSource/vault-action-wrapper@v3
