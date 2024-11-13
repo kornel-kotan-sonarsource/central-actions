@@ -1,10 +1,7 @@
 name: "Execute ${{ inputs.command }} in ${{ inputs.github_environment }}"
 description: A composite action to execute a command on an AWS environment.
 inputs:
-  github_environment:
-    description: The environment
-    required: true
-  command:
+  make_deploy_command:
     description: The command to execute
     required: true
 
