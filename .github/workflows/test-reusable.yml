@@ -1,0 +1,21 @@
+name: Template - Deploy environment
+
+on:
+  workflow_call:
+    inputs:
+      workflow_file:
+        required: true
+        type: string
+
+jobs:
+  execute-workflow:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Execute provided workflow
+        run: |
+          echo "Executing workflow from file: ${{ inputs.workflow_file }}"
+          cat ${{ inputs.workflow_file }}
+          # Here you can add logic to execute the workflow file if needed
