@@ -17,5 +17,4 @@ jobs:
       - name: Execute provided workflow
         run: |
           echo "Executing workflow from file: ${{ inputs.workflow_file }}"
-          cat ${{ inputs.workflow_file }}
-          # Here you can add logic to execute the workflow file if needed
+          gh workflow run ${{ inputs.workflow_file }}
