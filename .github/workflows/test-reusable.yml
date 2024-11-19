@@ -6,6 +6,9 @@ on:
       workflow_file:
         required: true
         type: string
+      gh_token:
+        required: true
+        type: string
 
 permissions:
   id-token: write
@@ -16,7 +19,7 @@ jobs:
   execute-workflow:
     runs-on: ubuntu-latest
     env:
-      GH_TOKEN: ${{ github.token }}
+      GH_TOKEN: ${{ gh_token }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
